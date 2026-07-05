@@ -11,7 +11,9 @@ jobs:
 
       - name: Compile Emulator
         run: |
-          make
+          export DEVKITPRO=/opt/devkitpro
+          export DEVKITARM=$DEVKITPRO/devkitARM
+          make -f Makefile
           
       - name: Upload Finished File
         uses: actions/upload-artifact@v4
