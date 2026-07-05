@@ -4,32 +4,31 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: devkitpro/devkitarm:latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Your Code
         uses: actions/checkout@v4
+        with:
+          path: user_code
 
-      - name: Auto-Fetch Missing Folders and Compile
+      - name: Checkout Base System
+        uses: actions/checkout@v4
+        with:
+          repository: DS-Homebrew/NesDS
+          path: base_repo
+
+      - name: Assemble and Compile
         run: |
-          # 1. Clone the official repository into a temporary folder to grab system dependencies
-          git clone https://github.com temp_repo
+          # Overwrite the base repo's menu.c with your custom version
+          cp user_code/common/menu.c base_repo/common/menu.c
           
-          # 2. Copy the missing arm7, arm9, and core project setup files into your workspace
-          cp -r temp_repo/arm7 ./
-          cp -r temp_repo/arm9 ./
-          cp temp_repo/Makefile ./
-          cp temp_repo/nesds.specs ./
+          # Move into the complete build directory
+          cd base_repo
           
-          # 3. Clean up the temp data
-          rm -rf temp_repo
-          
-          # 4. Force compilation using devkitARM paths
-          export DEVKITPRO=/opt/devkitpro
-          export DEVKITARM=$DEVKITPRO/devkitARM
-          make
-          
+          # Run the build inside the official devkitpro docker container
+          docker run --rm -v "${PWD}":/project devkitpro/devkitarm make
+
       - name: Upload Finished File
         uses: actions/upload-artifact@v4
         with:
           name: nesDS-Speedrun-Timer
-          path: ./*.nds
+          path: base_repo/*.nds
