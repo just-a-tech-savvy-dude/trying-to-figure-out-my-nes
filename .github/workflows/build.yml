@@ -18,13 +18,12 @@ jobs:
 
       - name: Assemble and Compile
         run: |
-          # Overwrite the base repo's menu.c with your custom version
-          cp user_code/common/menu.c base_repo/common/menu.c
+          # Fix: Copy menu.c directly from your root directory
+          cp user_code/menu.c base_repo/common/menu.c
           
-          # Move into the complete build directory
           cd base_repo
           
-          # Run the build inside the official devkitpro docker container
+          # Build using the devkitPro container directly on the runner
           docker run --rm -v "${PWD}":/project devkitpro/devkitarm make
 
       - name: Upload Finished File
