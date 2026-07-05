@@ -9,16 +9,27 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Force Direct Compile
+      - name: Auto-Fetch Missing Folders and Compile
         run: |
+          # 1. Clone the official repository into a temporary folder to grab system dependencies
+          git clone https://github.com temp_repo
+          
+          # 2. Copy the missing arm7, arm9, and core project setup files into your workspace
+          cp -r temp_repo/arm7 ./
+          cp -r temp_repo/arm9 ./
+          cp temp_repo/Makefile ./
+          cp temp_repo/nesds.specs ./
+          
+          # 3. Clean up the temp data
+          rm -rf temp_repo
+          
+          # 4. Force compilation using devkitARM paths
           export DEVKITPRO=/opt/devkitpro
           export DEVKITARM=$DEVKITPRO/devkitARM
-          export PATH=$DEVKITARM/bin:$PATH
-          arm-none-eabi-gcc -O2 -mthumb -mthumb-interwork -mcpu=arm946e-s -Iinclude -Icommon -c common/menu.c -o menu.o
-          arm-none-eabi-objcopy -O binary menu.o nesDS.nds
+          make
           
       - name: Upload Finished File
         uses: actions/upload-artifact@v4
         with:
           name: nesDS-Speedrun-Timer
-          path: ./nesDS.nds
+          path: ./*.nds
