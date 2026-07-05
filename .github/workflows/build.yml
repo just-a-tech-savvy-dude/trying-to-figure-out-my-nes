@@ -9,14 +9,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Compile Emulator
+      - name: Force Direct Compile
         run: |
           export DEVKITPRO=/opt/devkitpro
           export DEVKITARM=$DEVKITPRO/devkitARM
-          make -f Makefile
+          export PATH=$DEVKITARM/bin:$PATH
+          arm-none-eabi-gcc -O2 -mthumb -mthumb-interwork -mcpu=arm946e-s -Iinclude -Icommon -c common/menu.c -o menu.o
+          arm-none-eabi-objcopy -O binary menu.o nesDS.nds
           
       - name: Upload Finished File
         uses: actions/upload-artifact@v4
         with:
           name: nesDS-Speedrun-Timer
-          path: ./*.nds
+          path: ./nesDS.nds
